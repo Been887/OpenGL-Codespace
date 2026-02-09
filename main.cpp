@@ -3,44 +3,41 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
 #include "shader.hpp"
 #include "graphics.hpp"
 #include "window.hpp"
 
 int main() {
-    if(!glfwInit()) {
-        std::cout << "glfw failed to initialise!";
-        return -1;
+    if(!createWindow()) {
+        std::cout << "failed to create window!\n";
+        return 0;
     }
-
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-    glfwWindowHint(GLFW_OPENGL_COMPAT_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-    GLFWwindow* window = glfwCreateWindow(500, 500, "window", nullptr, nullptr);
-    if(!window) {
-        std::cout << "glfw window failed to initialise!";
-        return -1;
-    }
-
-    glfwMakeContextCurrent(window);
-
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-        std::cout << "Failed to initialize GLAD\n";
-        return -1;
-    }
-
-    int bufferwidth, bufferheight;
-    glfwGetFramebufferSize(window, &bufferwidth, &bufferheight);
-
-    glViewport(0, 0, bufferwidth, bufferheight);
+    CompileShaders();
+    loadSquare();
 
     while(!glfwWindowShouldClose(window)) {
         glfwPollEvents();
 
         glClearColor(0.2, 0.2, 0.2, 1.0);
         glClear(GL_COLOR_BUFFER_BIT);
+
+        glUseProgram(shader);
+        glBindVertexArray(VAO);
+
+        model = glm::mat4(1.0f);
+        model = glm::scale(model, glm::vec3(0.5, 0.5, 1.0));
+
+        //colourIn = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+
+        glUniformMatrix4fv(UniformModel, 1, GL_FALSE, glm::value_ptr(model));
+
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+        glBindVertexArray(0);
+        glUseProgram(0);
 
         glfwSwapBuffers(window);
     }
